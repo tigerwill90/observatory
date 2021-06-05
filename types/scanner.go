@@ -1,4 +1,4 @@
-package client
+package types
 
 type ScannerResult struct {
 	EndTime             string            `json:"end_time"`
