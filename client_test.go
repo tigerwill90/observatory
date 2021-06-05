@@ -278,7 +278,7 @@ func TestClientGetRecentScans(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func Exemple_analyze() {
+func Example_analyze() {
 	c := NewClient()
 	result, err := c.Analyze(context.TODO(), "observatory.mozilla.org", option.ForceRescan(true), option.WaitFinished(true, 5*time.Second))
 	if err != nil {
