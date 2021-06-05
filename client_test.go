@@ -87,9 +87,78 @@ func TestClientAnalyzeAllOption(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.Analyze(context.TODO(), "observatory.mozilla.org", option.ForceRescan(true), option.HideResult(true), option.WaitFinished(true, 1*time.Second))
+	got, err := c.Analyze(context.Background(), "observatory.mozilla.org", option.ForceRescan(true), option.HideResult(true), option.WaitFinished(true, 1*time.Second))
 	require.Nil(t, err)
 	assert.Equal(t, want, got)
+}
+
+func TestClientAnalyzeError(t *testing.T) {
+	cases := []struct {
+		name    string
+		ctx     context.Context
+		srv     *httptest.Server
+		wantErr error
+	}{
+		{
+			name: "aborted scan",
+			ctx:  context.Background(),
+			srv: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				aborted := &types.ScannerResult{State: Aborted}
+				if err := json.NewEncoder(w).Encode(aborted); err != nil {
+					t.Fatal(err)
+				}
+			})),
+			wantErr: ErrScannerAborted,
+		},
+		{
+			name: "failed scan",
+			ctx:  context.Background(),
+			srv: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				failed := &types.ScannerResult{State: Failed}
+				if err := json.NewEncoder(w).Encode(failed); err != nil {
+					t.Fatal(err)
+				}
+			})),
+			wantErr: ErrScannerFailed,
+		},
+		{
+			name: "cancel context",
+			ctx: func() context.Context {
+				ctx, cancel := context.WithCancel(context.Background())
+				cancel()
+				return ctx
+			}(),
+			srv: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				pending := &types.ScannerResult{State: Pending}
+				if err := json.NewEncoder(w).Encode(pending); err != nil {
+					t.Fatal(err)
+				}
+			})),
+			wantErr: context.Canceled,
+		},
+		{
+			name: "deadline exceeded",
+			ctx: func() context.Context {
+				ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+				return ctx
+			}(),
+			srv: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				pending := &types.ScannerResult{State: Pending}
+				if err := json.NewEncoder(w).Encode(pending); err != nil {
+					t.Fatal(err)
+				}
+			})),
+			wantErr: context.DeadlineExceeded,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := NewCustomClient(tc.srv.Client(), tc.srv.URL)
+			_, err := c.Analyze(tc.ctx, "observatory.mozilla.org", option.WaitFinished(true, 1*time.Second))
+			assert.ErrorIs(t, err, tc.wantErr)
+		})
+	}
 }
 
 func TestClientGetAssessment(t *testing.T) {
@@ -124,7 +193,7 @@ func TestClientGetAssessment(t *testing.T) {
 
 	c := NewCustomClient(srv.Client(), srv.URL)
 
-	got, err := c.GetAssessment(context.TODO(), "observatory.mozilla.org")
+	got, err := c.GetAssessment(context.Background(), "observatory.mozilla.org")
 	require.Nil(t, err)
 	require.Equal(t, want, got)
 }
@@ -145,7 +214,7 @@ func TestClientGetTestResults(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	result, err := c.GetTestResults(context.TODO(), 100)
+	result, err := c.GetTestResults(context.Background(), 100)
 	require.Nil(t, err)
 	got, err := json.Marshal(result)
 	assert.Nil(t, err)
@@ -171,7 +240,7 @@ func TestClientGetScannerState(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.GetScannerState(context.TODO())
+	got, err := c.GetScannerState(context.Background())
 	require.Nil(t, err)
 	assert.Equal(t, want, got)
 }
@@ -201,7 +270,7 @@ func TestClientGetGradeDistribution(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.GetGradeDistribution(context.TODO())
+	got, err := c.GetGradeDistribution(context.Background())
 	require.Nil(t, err)
 	assert.Equal(t, want, got)
 }
@@ -242,7 +311,7 @@ func TestClientGetScanHistory(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.GetScanHistory(context.TODO(), "observatory.mozilla.org")
+	got, err := c.GetScanHistory(context.Background(), "observatory.mozilla.org")
 	require.Nil(t, err)
 	assert.Equal(t, want, got)
 }
@@ -273,7 +342,7 @@ func TestClientGetRecentScans(t *testing.T) {
 	defer srv.Close()
 
 	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.GetRecentScans(context.TODO(), option.WithMinScore(119))
+	got, err := c.GetRecentScans(context.Background(), option.WithMinScore(119))
 	require.Nil(t, err)
 	assert.Equal(t, want, got)
 }

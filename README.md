@@ -21,3 +21,6 @@ if err != nil {
 fmt.Printf("Grade: %s, Score: %d\n", result.Grade, result.Score)
 // Grade: A+, Score: 125
 ````
+
+### Disclaimer
+Breaking change may happen before `v1.0.0`.
