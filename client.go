@@ -186,7 +186,7 @@ func (c *Client) GetScannerState(ctx context.Context) (*types.ScannerStates, err
 // GetTestResults returns the detailed test result of a scan. The results of all these tests can
 // bet retrieved once the scan's state has been placed in the FINISHED state.
 // https://github.com/mozilla/http-observatory/blob/master/httpobs/docs/api.md#retrieve-test-results
-func (c *Client) GetTestResults(ctx context.Context, scanID int) (*types.ScannerTestResult, error) {
+func (c *Client) GetTestResults(ctx context.Context, scanID types.ScanID) (*types.ScannerTestResult, error) {
 	data := url.Values{}
 	data.Set("scan", fmt.Sprintf("%d", scanID))
 

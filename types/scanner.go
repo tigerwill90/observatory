@@ -1,5 +1,7 @@
 package types
 
+type ScanID int
+
 // ScannerResult is a summarized result of a scan.
 type ScannerResult struct {
 	// timestamp for when the scan completed
@@ -11,7 +13,7 @@ type ScannerResult struct {
 	// the entirety of the HTTP response headers
 	ResponseHeaders map[string]string `json:"response_headers"`
 	// unique ID number assigned to the scan
-	ScanID int `json:"scan_id"`
+	ScanID ScanID `json:"scan_id"`
 	// final score assessed upon a completed (FINISHED) scan
 	Score int `json:"score"`
 	// Mozilla risk likelihood indicator that is the equivalent of the grade
@@ -257,7 +259,7 @@ type ScannerHostHistory struct {
 	EndTime              string `json:"end_time"`
 	EndTimeUnixTimestamp int    `json:"end_time_unix_timestamp"`
 	Grade                string `json:"grade"`
-	ScanId               int    `json:"scan_id"`
+	ScanId               ScanID `json:"scan_id"`
 	Score                int    `json:"score"`
 }
 
