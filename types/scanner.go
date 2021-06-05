@@ -1,29 +1,52 @@
 package types
 
+// ScannerResult is a summarized result of a scan.
 type ScannerResult struct {
-	EndTime             string            `json:"end_time"`
-	Grade               string            `json:"grade"`
-	Hidden              bool              `json:"hidden"`
-	ResponseHeaders     map[string]string `json:"response_headers"`
-	ScanID              int               `json:"scan_id"`
-	Score               int               `json:"score"`
-	LikelihoodIndicator string            `json:"likelihood_indicator"`
-	StartTime           string            `json:"start_time"`
-	State               string            `json:"state"`
-	TestsFailed         int               `json:"tests_failed"`
-	TestsPassed         int               `json:"tests_passed"`
-	TestsQuantity       int               `json:"tests_quantity"`
+	// timestamp for when the scan completed
+	EndTime string `json:"end_time"`
+	// final grade assessed upon a completed scan
+	Grade string `json:"grade"`
+	// whether the scan results are unlisted on the recent results page
+	Hidden bool `json:"hidden"`
+	// the entirety of the HTTP response headers
+	ResponseHeaders map[string]string `json:"response_headers"`
+	// unique ID number assigned to the scan
+	ScanID int `json:"scan_id"`
+	// final score assessed upon a completed (FINISHED) scan
+	Score int `json:"score"`
+	// Mozilla risk likelihood indicator that is the equivalent of the grade
+	LikelihoodIndicator string `json:"likelihood_indicator"`
+	// timestamp for when the scan was first request
+	StartTime string `json:"start_time"`
+	// the current state of the scan
+	State string `json:"state"`
+	// the number of subtests that were assigned a fail result
+	TestsFailed int `json:"tests_failed"`
+	// the number of subtests that were assigned a passing result
+	TestsPassed int `json:"tests_passed"`
+	// the total number of tests available and assessed at the time of the scan
+	TestsQuantity int `json:"tests_quantity"`
 }
 
+// ScannerStates hold statistics on HTTP Observatory usage.
+// Pending, starting and running state are good indicator of
+// the current api load.
 type ScannerStates struct {
-	Aborted  int `json:"ABORTED"`
-	Failed   int `json:"FAILED"`
+	// aborted for internal technical reasons
+	Aborted int `json:"ABORTED"`
+	// failed to complete, typically due to the site being unavailable or timing out
+	Failed int `json:"FAILED"`
+	// completed successfully
 	Finished int `json:"FINISHED"`
-	Pending  int `json:"PENDING"`
+	// issued by the API but not yet picked up by a scanner instance
+	Pending int `json:"PENDING"`
+	// assigned to a scanning instance
 	Starting int `json:"STARTING"`
-	Running  int `json:"RUNNING"`
+	// currently in the process of scanning a website
+	Running int `json:"RUNNING"`
 }
 
+// ScannerTestResult hold the detailed result of each test of a scan.
 type ScannerTestResult struct {
 	ContentSecurityPolicy struct {
 		Expectation string `json:"expectation"`
@@ -211,6 +234,8 @@ type ScannerTestResult struct {
 	} `json:"x-xss-protection"`
 }
 
+// ScannerGradeDistribution hold statistics on "Grade" repartition
+// of each public site web scanned by HTTP Observatory.
 type ScannerGradeDistribution struct {
 	A  int `json:"A+"`
 	A1 int `json:"A"`
@@ -227,6 +252,7 @@ type ScannerGradeDistribution struct {
 	F  int `json:"F"`
 }
 
+// ScannerHostHistory hold a short summary of the result of a past scan.
 type ScannerHostHistory struct {
 	EndTime              string `json:"end_time"`
 	EndTimeUnixTimestamp int    `json:"end_time_unix_timestamp"`
@@ -235,4 +261,5 @@ type ScannerHostHistory struct {
 	Score                int    `json:"score"`
 }
 
+// ScannerRecentScans hold the grade result of maximum ten last scans.
 type ScannerRecentScans map[string]string
