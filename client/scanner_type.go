@@ -226,3 +226,13 @@ type ScannerGradeDistribution struct {
 	D2 int `json:"D-"`
 	F  int `json:"F"`
 }
+
+type ScannerHostHistory struct {
+	EndTime              string `json:"end_time"`
+	EndTimeUnixTimestamp int    `json:"end_time_unix_timestamp"`
+	Grade                string `json:"grade"`
+	ScanId               int    `json:"scan_id"`
+	Score                int    `json:"score"`
+}
+
+type ScannerRecentScans map[string]string

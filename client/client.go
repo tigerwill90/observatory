@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/tigerwill90/observatory/client/option"
 	"net/http"
 	"net/url"
 	"time"
@@ -55,10 +54,10 @@ func New(c *http.Client) *Client {
 	}
 }
 
-func (c *Client) Analyze(ctx context.Context, host string, opts ...option.Option) (*ScannerResult, error) {
-	analyseOpt := option.DefaultOption()
+func (c *Client) Analyze(ctx context.Context, host string, opts ...Option) (*ScannerResult, error) {
+	analyseOpt := defaultOption()
 	for _, opt := range opts {
-		opt.Apply(analyseOpt)
+		opt.apply(analyseOpt)
 	}
 
 	result, err := c.analyze(ctx, host, analyseOpt)
@@ -70,11 +69,11 @@ func (c *Client) Analyze(ctx context.Context, host string, opts ...option.Option
 		return c.GetAssessment(ctx, host)
 	}
 
-	if result.State == Finished || !analyseOpt.WaitFinished {
+	if result.State == Finished || !analyseOpt.waitFinished {
 		return result, nil
 	}
 
-	timer := time.NewTicker(30 * time.Second)
+	timer := time.NewTicker(10 * time.Second)
 	defer timer.Stop()
 STOP:
 	for {
@@ -96,10 +95,10 @@ STOP:
 	return result, nil
 }
 
-func (c *Client) analyze(ctx context.Context, host string, opt *option.AnalyzeOption) (*ScannerResult, error) {
+func (c *Client) analyze(ctx context.Context, host string, opt *analyzeOption) (*ScannerResult, error) {
 	data := url.Values{}
-	data.Set("hidden", fmt.Sprintf("%t", opt.Hidden))
-	data.Set("rescan", fmt.Sprintf("%t", opt.Rescan))
+	data.Set("hidden", fmt.Sprintf("%t", opt.hidden))
+	data.Set("rescan", fmt.Sprintf("%t", opt.rescan))
 
 	queryParams := url.Values{}
 	queryParams.Set("host", host)
@@ -115,7 +114,7 @@ func (c *Client) analyze(ctx context.Context, host string, opt *option.AnalyzeOp
 		return nil, err
 	}
 
-	if err := checkScannerState(result.State); err != nil {
+	if err := checkScannerError(result.State); err != nil {
 		return nil, err
 	}
 
@@ -137,7 +136,7 @@ func (c *Client) GetAssessment(ctx context.Context, host string) (*ScannerResult
 		return nil, fmt.Errorf("retrieve assessment failed: %w", err)
 	}
 
-	if err := checkScannerState(result.State); err != nil {
+	if err := checkScannerError(result.State); err != nil {
 		return nil, fmt.Errorf("retrieve assessment failed: %w", err)
 	}
 
@@ -190,7 +189,49 @@ func (c *Client) GetGradeDistribution(ctx context.Context) (*ScannerGradeDistrib
 	return gradeDistribution, nil
 }
 
-func checkScannerState(state string) error {
+func (c *Client) GetScanHistory(ctx context.Context, host string) ([]*ScannerHostHistory, error) {
+	data := url.Values{}
+	data.Set("host", host)
+	reqConfig := request{
+		method:      "GET",
+		apiCall:     ApiCallHostHistory,
+		queryParams: data,
+	}
+
+	histories := make([]*ScannerHostHistory, 0)
+	if err := c.doRequest(ctx, reqConfig, &histories); err != nil {
+		return nil, fmt.Errorf("retrieve host's scan history failed: %w", err)
+	}
+
+	return histories, nil
+}
+
+func (c *Client) GetRecentScans(ctx context.Context, opt ScanOption) (ScannerRecentScans, error) {
+	o := defaultScanOption()
+	opt.apply(o)
+	data := url.Values{}
+	if o.max != 0 {
+		data.Set("max", fmt.Sprintf("%d", o.max))
+	} else {
+		data.Set("min", fmt.Sprintf("%d", o.min))
+	}
+
+	recentScans := make(ScannerRecentScans)
+
+	reqConfig := request{
+		method:      "GET",
+		apiCall:     ApiCallRecentScans,
+		queryParams: data,
+	}
+
+	if err := c.doRequest(ctx, reqConfig, &recentScans); err != nil {
+		return nil, fmt.Errorf("retrieve recent scans failed: %w", err)
+	}
+
+	return recentScans, nil
+}
+
+func checkScannerError(state string) error {
 	if state == Aborted {
 		return ErrScannerAborted
 	}
