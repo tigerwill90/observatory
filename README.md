@@ -1,4 +1,5 @@
 [![Build Status](https://www.travis-ci.com/tigerwill90/observatory.svg?token=vig1YafE12hJt82nEwq2&branch=master)](https://www.travis-ci.com/tigerwill90/observatory)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tigerwill90/observatory)](https://goreportcard.com/report/github.com/tigerwill90/observatory)
 
 # Observatory
 A small and convenient Go client to consume [HTTP Observatory](https://observatory.mozilla.org/) [api](https://github.com/mozilla/http-observatory/blob/master/httpobs/docs/api.md).
