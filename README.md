@@ -20,6 +20,19 @@ if err != nil {
 }
 fmt.Printf("Grade: %s, Score: %d\n", result.Grade, result.Score)
 // Grade: A+, Score: 125
+
+detail, err := c.GetTestResults(context.TODO(), result.ScanID)
+if err != nil {
+    panic(err)
+}
+
+fmt.Printf(
+    "Name: %s, Pass: %t, Expectation: %s\n",
+    detail.ContentSecurityPolicy.Name,
+    detail.ContentSecurityPolicy.Pass,
+    detail.ContentSecurityPolicy.Expectation,
+)
+// Name: content-security-policy, Pass: true, Expectation: csp-implemented-with-no-unsafe
 ````
 
 ### Disclaimer
