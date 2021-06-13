@@ -26,7 +26,6 @@ const (
 	ApiCallGetGradeDistribution = "getGradeDistribution"
 	ApiCallAnalyze              = "analyze"
 	ApiCallGetScanResults       = "getScanResults"
-	ApiCallGetScannerStates     = "getScannerStates"
 	ApiCallGetHostHistory       = "getHostHistory"
 	ApiCallGetRecentScans       = "getRecentScans"
 )
@@ -164,23 +163,6 @@ func (c *Client) GetAssessment(ctx context.Context, host string) (*types.Scanner
 	}
 
 	return result, nil
-}
-
-// GetScannerState returns the state of the scanner. It can be useful for determining
-// how busy the HTTP Observatory is.
-// https://github.com/mozilla/http-observatory/blob/master/httpobs/docs/api.md#retrieve-scanner-states
-func (c *Client) GetScannerState(ctx context.Context) (*types.ScannerStates, error) {
-	reqConfig := request{
-		method:  "GET",
-		apiCall: ApiCallGetScannerStates,
-	}
-
-	states := new(types.ScannerStates)
-	if err := c.doRequest(ctx, reqConfig, states); err != nil {
-		return nil, fmt.Errorf("retrieve scanner states failed: %w", err)
-	}
-
-	return states, nil
 }
 
 // GetTestResults returns the detailed test result of a scan. The results of all these tests can

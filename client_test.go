@@ -221,30 +221,6 @@ func TestClientGetTestResults(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestClientGetScannerState(t *testing.T) {
-	want := &types.ScannerStates{
-		Aborted:  10,
-		Failed:   281,
-		Finished: 46240,
-		Pending:  122,
-		Starting: 96,
-		Running:  128,
-	}
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, fmt.Sprintf("/%s", ApiCallGetScannerStates), r.URL.Path)
-		if err := json.NewEncoder(w).Encode(want); err != nil {
-			t.Fatal(err)
-		}
-	}))
-	defer srv.Close()
-
-	c := NewCustomClient(srv.Client(), srv.URL)
-	got, err := c.GetScannerState(context.Background())
-	require.Nil(t, err)
-	assert.Equal(t, want, got)
-}
-
 func TestClientGetGradeDistribution(t *testing.T) {
 	want := &types.ScannerGradeDistribution{
 		A:  3,

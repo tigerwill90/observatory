@@ -30,24 +30,6 @@ type ScannerResult struct {
 	TestsQuantity int `json:"tests_quantity"`
 }
 
-// ScannerStates hold statistics on HTTP Observatory usage.
-// Pending, starting and running state are good indicator of
-// the current api load.
-type ScannerStates struct {
-	// aborted for internal technical reasons
-	Aborted int `json:"ABORTED"`
-	// failed to complete, typically due to the site being unavailable or timing out
-	Failed int `json:"FAILED"`
-	// completed successfully
-	Finished int `json:"FINISHED"`
-	// issued by the API but not yet picked up by a scanner instance
-	Pending int `json:"PENDING"`
-	// assigned to a scanning instance
-	Starting int `json:"STARTING"`
-	// currently in the process of scanning a website
-	Running int `json:"RUNNING"`
-}
-
 // ScannerTestResult hold the detailed result of each test of a scan.
 type ScannerTestResult struct {
 	ContentSecurityPolicy struct {
