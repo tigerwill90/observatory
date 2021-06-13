@@ -81,7 +81,10 @@ func (c *Client) Analyze(ctx context.Context, host string, opts ...option.Option
 	}
 
 	if result.State == "" {
-		return c.GetAssessment(ctx, host)
+		result, err = c.GetAssessment(ctx, host)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if result.State == Finished || !analyseOpt.WaitFinished {
